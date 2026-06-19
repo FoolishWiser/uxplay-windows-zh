@@ -1,9 +1,11 @@
 name: build uxplay-windows
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
+      - zh-custom
   workflow_dispatch:
     inputs:
       tmate_debug_enabled:
