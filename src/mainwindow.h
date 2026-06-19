@@ -14,6 +14,7 @@
 class QMenu;
 class QAction;
 class AirPlayWorker;
+class SMTCManager;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -24,6 +25,7 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
 
 private slots:
     void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -49,6 +51,8 @@ private:
     void startBluetoothBeacon(const QString &path);
     void stopBluetoothBeacon();
     void applyRendererAndFullscreenArgs(QStringList &args);
+    void initSMTC();
+    void updateSMTC(bool playing);
 
     QProcess *m_beacon = nullptr;
 
@@ -76,6 +80,7 @@ private:
     QLabel *m_statusLabel = nullptr;
 
     AirPlayWorker *m_worker = nullptr;
+    SMTCManager *m_smtc = nullptr;
 
     bool m_running = false;
     bool m_quitting = false;

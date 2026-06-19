@@ -13,9 +13,9 @@
 
 int main(int argc, char *argv[]) {
 #ifdef _WIN32
-    // if the process was started from a console (CMD/PowerShell), attach to it so we can see qDebug() output.
+    // 如果进程是从控制台（CMD/PowerShell）启动的，附加到控制台以便查看 qDebug() 输出
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-        // redirect stdout and stderr to the console
+        // 重定向 stdout 和 stderr 到控制台
         FILE* fp;
         freopen_s(&fp, "CONOUT$", "w", stdout);
         freopen_s(&fp, "CONOUT$", "w", stderr);
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     app.setQuitOnLastWindowClosed(false);
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-        QMessageBox::critical(nullptr, "Error", "System tray not available.");
+        QMessageBox::critical(nullptr, "错误", "系统托盘不可用。");
         return 1;
     }
 

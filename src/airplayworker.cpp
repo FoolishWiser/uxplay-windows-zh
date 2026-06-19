@@ -22,7 +22,7 @@ void AirPlayWorker::run() {
         argv.push_back(argBytes.back().data());
     }
 
-    qDebug() << "Starting UxPlay engine with arguments:" << m_args;
+    qDebug() << "正在使用以下参数启动 UxPlay 引擎：" << m_args;
     emit started();
 
     int ret = 0;
@@ -33,7 +33,7 @@ void AirPlayWorker::run() {
 
         // Se il processo termina, esci dal loop
         if (ret != 0) {
-            emit errorOccurred(QString("Engine exited with code %1").arg(ret));
+            emit errorOccurred(QString("引擎已退出，返回代码 %1").arg(ret));
             break;
         }
     }
