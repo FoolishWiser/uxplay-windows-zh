@@ -56,7 +56,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     ensureSettingsFileExists();
     setupTray();
     setupUI();
+#ifdef _MSC_VER
     initSMTC();
+#endif
 
     // If Bonjour Service is missing, we must install it; otherwise we exit.
     if (ensureBonjourServiceInstalled()) {
@@ -71,8 +73,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 MainWindow::~MainWindow() {
     m_quitting = true;
     stopServer();
+#ifdef _MSC_VER
     delete m_smtc;
     m_smtc = nullptr;
+#endif
 }
 
 void MainWindow::ensureSettingsFileExists() {
@@ -345,7 +349,9 @@ void MainWindow::stopServer() {
 void MainWindow::onAirplayStarted() {
     m_running = true;
     updateStatus();
+#ifdef _MSC_VER
     updateSMTC(true);
+#endif
 
     // rename video window when it pops up
     printf("onAirplayStarted()!\n");
@@ -370,7 +376,9 @@ void MainWindow::onAirplayStarted() {
 void MainWindow::onAirplayStopped() {
     m_running = false;
     updateStatus();
+#ifdef _MSC_VER
     updateSMTC(false);
+#endif
     
     if (!m_quitting) {
         qDebug() << "会话已结束，正在重启服务器以保持就绪状态...";
@@ -565,6 +573,7 @@ bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr
     return false;
 }
 
+#ifdef _MSC_VER
 void MainWindow::initSMTC() {
     m_smtc = new SMTCManager();
 
@@ -605,7 +614,9 @@ void MainWindow::initSMTC() {
 
     qDebug() << "SMTC 初始化成功";
 }
+#endif
 
+#ifdef _MSC_VER
 void MainWindow::updateSMTC(bool playing) {
     if (!m_smtc || !m_smtc->isInitialized()) return;
 
@@ -628,3 +639,4 @@ void MainWindow::updateSMTC(bool playing) {
         m_smtc->setPlaybackState(false);
     }
 }
+#endif
