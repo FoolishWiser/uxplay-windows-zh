@@ -16,6 +16,7 @@ add_executable(uxplay-windows WIN32
     src/mainwindow.cpp
     src/airplayworker.cpp
     src/mdns_responder.cpp
+    src/smtc_manager.cpp
     src/resources.rc
 )
 
