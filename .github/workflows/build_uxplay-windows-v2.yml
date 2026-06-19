@@ -147,12 +147,22 @@ jobs:
         run: |
           $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
 
+          # 复制许可证文件到根目录（WiX 需要）
+          if (Test-Path "docs/LICENSE.rtf") {
+            Copy-Item "docs/LICENSE.rtf" "LICENSE.rtf"
+          }
+
           wix extension add WixToolset.UI.wixext -acceptEula wix7
 
           wix build -acceptEula wix7 product.wxs `
             -arch x64 `
             -out uxplaywindows-installer.msi `
             -ext WixToolset.UI.wixext
+
+          # 清理
+          if (Test-Path "LICENSE.rtf") {
+            Remove-Item "LICENSE.rtf"
+          }
 
       - name: upload msi artifact
         uses: actions/upload-artifact@v5
