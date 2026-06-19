@@ -1,4 +1,9 @@
 #include "smtc_manager.h"
+
+// SMTC 需要 Windows SDK 的 WinRT 头文件，仅在 MSVC 下可用
+// MinGW (GCC) 下自动降级为空操作
+#ifdef _MSC_VER
+
 #include <roapi.h>
 #include <windows.media.h>
 #include <windows.media.systemmediatransportcontrolsinterop.h>
@@ -48,8 +53,6 @@ private:
     SMTCManager::ButtonCallback m_callback;
 };
 
-// ==================== SMTCManager 实现 ====================
-
 SMTCManager::SMTCManager()
     : m_initialized(false)
     , m_roInitialized(false)
@@ -68,44 +71,27 @@ bool SMTCManager::initialize(HWND window) {
 
     m_window = window;
 
-    // 初始化 Windows Runtime
     HRESULT hr = RoInitialize(RO_INIT_MULTITHREADED);
-    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
-        return false;
-    }
+    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) return false;
     m_roInitialized = true;
 
-    // 获取 SMTC Interop 接口
     ComPtr<ISystemMediaTransportControlsInterop> interop;
     hr = RoGetActivationFactory(
         HStringReference(RuntimeClass_Windows_Media_SystemMediaTransportControls).Get(),
         IID_PPV_ARGS(&interop));
-    if (FAILED(hr)) {
-        return false;
-    }
+    if (FAILED(hr)) return false;
 
-    // 获取与窗口关联的 SMTC 实例
     ISystemMediaTransportControls* controls = nullptr;
     hr = interop->GetForWindow(m_window, IID_PPV_ARGS(&controls));
-    if (FAILED(hr) || !controls) {
-        return false;
-    }
+    if (FAILED(hr) || !controls) return false;
     m_controls = controls;
 
-    // 启用 SMTC
     controls->put_IsEnabled(true);
     controls->put_IsPlayEnabled(true);
     controls->put_IsPauseEnabled(true);
     controls->put_IsNextEnabled(false);
     controls->put_IsPreviousEnabled(false);
-    controls->put_IsChannelUpEnabled(false);
-    controls->put_IsChannelDownEnabled(false);
-    controls->put_IsFastForwardEnabled(false);
-    controls->put_IsRewindEnabled(false);
-    controls->put_IsRecordEnabled(false);
-    controls->put_IsStopEnabled(false);
 
-    // 注册按钮事件
     auto handler = Make<SMTCButtonHandler>(m_callback);
     if (handler) {
         EventRegistrationToken token;
@@ -121,60 +107,42 @@ bool SMTCManager::initialize(HWND window) {
 
 void SMTCManager::setPlaybackState(bool playing) {
     if (!m_initialized || !m_controls) return;
-
     auto controls = static_cast<ISystemMediaTransportControls*>(m_controls);
-    
-    if (playing) {
-        controls->put_PlaybackStatus(SystemMediaTransportControlsPlaybackStatusPlaying);
-    } else {
-        controls->put_PlaybackStatus(SystemMediaTransportControlsPlaybackStatusPaused);
-    }
+    controls->put_PlaybackStatus(playing
+        ? SystemMediaTransportControlsPlaybackStatusPlaying
+        : SystemMediaTransportControlsPlaybackStatusPaused);
 }
 
 void SMTCManager::setTrackInfo(const std::wstring& title,
                                 const std::wstring& artist,
                                 const std::wstring& album) {
     if (!m_initialized || !m_controls) return;
-
     auto controls = static_cast<ISystemMediaTransportControls*>(m_controls);
 
-    // 获取显示属性更新器
     ISystemMediaTransportControlsDisplayUpdater* updater = nullptr;
     HRESULT hr = controls->get_DisplayUpdater(&updater);
     if (FAILED(hr) || !updater) return;
 
-    // 设置为音乐类型
     updater->put_Type(MediaPlaybackType::MediaPlaybackType_Music);
 
-    // 获取音乐属性
     IMusicDisplayProperties* musicProps = nullptr;
     hr = updater->get_MusicProperties(&musicProps);
     if (SUCCEEDED(hr) && musicProps) {
-        if (!title.empty()) {
-            musicProps->put_Title(HStringReference(title.c_str()).Get());
-        }
-        if (!artist.empty()) {
-            musicProps->put_Artist(HStringReference(artist.c_str()).Get());
-        }
-        if (!album.empty()) {
-            musicProps->put_AlbumTitle(HStringReference(album.c_str()).Get());
-        }
+        if (!title.empty()) musicProps->put_Title(HStringReference(title.c_str()).Get());
+        if (!artist.empty()) musicProps->put_Artist(HStringReference(artist.c_str()).Get());
+        if (!album.empty()) musicProps->put_AlbumTitle(HStringReference(album.c_str()).Get());
         musicProps->Release();
     }
-
     updater->Update();
     updater->Release();
 }
 
-void SMTCManager::setButtonCallback(ButtonCallback cb) {
-    m_callback = cb;
-}
+void SMTCManager::setButtonCallback(ButtonCallback cb) { m_callback = cb; }
 
 void SMTCManager::unregisterEvents() {
     if (m_controls && m_events_token) {
         auto controls = static_cast<ISystemMediaTransportControls*>(m_controls);
-        auto token = *static_cast<EventRegistrationToken*>(m_events_token);
-        controls->remove_ButtonPressed(token);
+        controls->remove_ButtonPressed(*static_cast<EventRegistrationToken*>(m_events_token));
     }
     delete static_cast<EventRegistrationToken*>(m_events_token);
     m_events_token = nullptr;
@@ -182,10 +150,7 @@ void SMTCManager::unregisterEvents() {
 
 void SMTCManager::releaseInterfaces() {
     if (m_controls) {
-        auto controls = static_cast<ISystemMediaTransportControls*>(m_controls);
-        // 禁用 SMTC
-        controls->put_IsEnabled(false);
-        controls->Release();
+        static_cast<ISystemMediaTransportControls*>(m_controls)->Release();
         m_controls = nullptr;
     }
 }
@@ -195,9 +160,19 @@ void SMTCManager::cleanup() {
     releaseInterfaces();
     m_initialized = false;
     m_window = nullptr;
-
-    if (m_roInitialized) {
-        RoUninitialize();
-        m_roInitialized = false;
-    }
+    if (m_roInitialized) { RoUninitialize(); m_roInitialized = false; }
 }
+
+#else
+
+SMTCManager::SMTCManager() : m_initialized(false), m_roInitialized(false), m_window(nullptr), m_controls(nullptr), m_events_token(nullptr) {}
+SMTCManager::~SMTCManager() { cleanup(); }
+bool SMTCManager::initialize(HWND) { return false; }
+void SMTCManager::setPlaybackState(bool) {}
+void SMTCManager::setTrackInfo(const std::wstring&, const std::wstring&, const std::wstring&) {}
+void SMTCManager::setButtonCallback(ButtonCallback) {}
+void SMTCManager::cleanup() { m_initialized = false; }
+void SMTCManager::unregisterEvents() {}
+void SMTCManager::releaseInterfaces() {}
+
+#endif
