@@ -87,7 +87,7 @@ void MainWindow::ensureSettingsFileExists() {
     if (!file.exists()) {
         if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream out(&file);
-            out << "-n ZYT的Windows -nh";
+            out << "-n uxplay-windows -nh";
             file.close();
         }
     }
@@ -101,7 +101,7 @@ QStringList MainWindow::getArgumentsFromFile() {
         file.close();
         return content.split(" ", Qt::SkipEmptyParts);
     }
-    return QStringList() << "-n" << "ZYT的Windows" << "-nh";
+    return QStringList() << "-n" << "uxplay-windows" << "-nh";
 }
 
 void MainWindow::setupUI() {
@@ -610,7 +610,7 @@ void MainWindow::updateSMTC(bool playing) {
     if (!m_smtc || !m_smtc->isInitialized()) return;
 
     QStringList args = getArgumentsFromFile();
-    QString serverName = QString::fromWCharArray(L"ZYT的Windows");
+    QString serverName = QStringLiteral("uxplay-windows");
     // 从参数中提取自定义名称
     int nameIdx = args.indexOf("-n");
     if (nameIdx >= 0 && nameIdx + 1 < args.size()) {
