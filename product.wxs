@@ -9,11 +9,11 @@
     Manufacturer="leapbtw"
     Version="2.1.0.1736"
     UpgradeCode="00000eaf-dcca-458f-ab77-aaef11ce4ba8"
-    Language="1033"
+    Language="2052"
     Scope="perMachine">
 
     <MajorUpgrade
-      DowngradeErrorMessage="A newer version of uxplay-windows is already installed." />
+      DowngradeErrorMessage="已安装更新版本的 uxplay-windows。" />
     <WixVariable Id="WixUILicenseRtf" Value="./docs/LICENSE.rtf" />
     <MediaTemplate EmbedCab="yes" />
 
@@ -31,8 +31,8 @@
 
     <Feature
       Id="DesktopShortcuts"
-      Title="Desktop Shortcut"
-      Description="Create a shortcut on the desktop"
+      Title="创建桌面快捷方式"
+      Description="在桌面上创建 uxplay-windows 的快捷方式"
       Level="1">
       <ComponentRef Id="DesktopShortcutComponent" />
     </Feature>

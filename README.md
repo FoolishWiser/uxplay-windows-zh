@@ -1,109 +1,113 @@
-```diff
-+ 29 july 2026
-+ new build system seems to be working great for both x64 and arm64.
-+ I'd like to understand if it's possible for me to codesign uxplay-windows before making a new release
-```
+[![build uxplay-windows](https://github.com/FoolishWiser/uxplay-windows-zh/actions/workflows/build-uxplay-windows.yml/badge.svg)](https://github.com/FoolishWiser/uxplay-windows-zh/actions/workflows/build-uxplay-windows.yml)
 
-# FREE AirPlay to your Windows PC
-Free as both in "freedom" and "free beer"!
+# 把 AirPlay 免费投到你的 Windows 电脑
 
-## Installation
-Download the latest version of uxplay-windows from [**releases**](https://github.com/leapbtw/uxplay-windows/releases/latest).
+"免费"既指**自由**，也指**免费啤酒**。
 
-After installing, control uxplay-windows from it's [tray icon](https://www.odu.edu/sites/default/files/documents/win10-system-tray.pdf)! Right-click it to start or stop AirPlay. \
-You can also set it to run automatically when your PC starts
+> [!NOTE]
+> **关于本仓库（汉化版）**
+>
+> 本仓库是 [leapbtw/uxplay-windows](https://github.com/leapbtw/uxplay-windows) 的**汉化分支**，
+> 代码基线跟随上游 `multi-arch` 分支（UxPlay 1.73.7），只做中文本地化，不改变原有功能与构建方式。
+>
+> 已汉化的部分：
+> - 主窗口、托盘菜单、状态提示、确认/警告对话框
+> - "当前日志"查看窗口
+> - 安装包（MSI）的界面语言与快捷方式说明
+> - UxPlay 参数说明（主界面上的"查看 UxPlay 参数说明"按钮）
+> - 界面字体自动选用系统中文字体（微软雅黑 / 黑体），避免出现方块字
+>
+> 英文原文：[README.en.md](./README.en.md)。
+> 上游更新后，可按[文末](#与上游同步)的方式合并，汉化内容集中在少数源文件中，冲突范围很小。
 
-## WIKI (FAQ / Troubleshooting / Help)
-Please take a look at the [Wiki](https://github.com/leapbtw/uxplay-windows/wiki), it should contain everything you're looking for
+## 安装
+
+从 [**Releases**](https://github.com/leapbtw/uxplay-windows/releases/latest) 下载原版安装包即可直接使用；
+本汉化仓库的构建产物在 [Actions](https://github.com/FoolishWiser/uxplay-windows-zh/actions/workflows/build-uxplay-windows.yml)
+里（每次推送到 `main` 会自动构建 x64 / ARM64 的便携 ZIP 与 MSI 安装包，下载 artifact 即可）。
+
+安装完成后，请通过[系统托盘图标](https://www.odu.edu/sites/default/files/documents/win10-system-tray.pdf)控制 uxplay-windows：
+右键托盘图标即可启动或停止 AirPlay。你也可以勾选"开机自动启动 uxplay-windows"。
+
+## 自定义设备名称
+
+默认情况下，设备在网络上显示为 `uxplay-windows`。想改成别的名字（例如"客厅的电脑"）：
+
+1. 打开程序，点击"**编辑 UxPlay 启动参数（高级）**"，系统会用默认编辑器打开 `arguments.txt`；
+2. 把其中 `-n uxplay-windows -nh` 改成 `-n 你的设备名 -nh`，例如 `-n 客厅的电脑 -nh`；
+3. 保存后重启程序（右键托盘图标 → 重启），新名称即会生效。
+
+## 常见问题（FAQ）
 
 > [!IMPORTANT]
-> *Why is Windows Defender complaining during installation?*
-> 
-> ![alt text](https://raw.githubusercontent.com/leapbtw/uxplay-windows/refs/heads/x64/stuff/defender.png "defender")
+> **安装时 Windows Defender 为什么会报警？**
 >
-> Just click on `More info` and it will let you install. It complains because the executable is not signed. If you don't trust this software you can always build it yourself! See below.
+> ![defender](https://raw.githubusercontent.com/leapbtw/uxplay-windows/refs/heads/x64/stuff/defender.png)
 >
-> If prompted by Windows Firewall, please **allow** uxplay-windows to ensure it functions properly.
+> 点击 `更多信息` → `仍要运行` 即可继续安装。报警的原因是可执行文件没有代码签名。
+> 如果你不信任这个软件，也可以按下面的说明自行构建。
+>
+> 如果 Windows 防火墙弹出提示，请**允许** uxplay-windows 通过，否则功能会受影响。
 
-<br>
-<details>
-<summary><strong>Building</strong></summary>
+> [!TIP]
+> **我的 iPhone / iPad / Mac 连不上电脑！**
+>
+> 1. 确认 `uxplay-windows.exe` 正在运行：右键托盘图标把它重启一次；
+> 2. 在 iPhone/iPad/Mac 上关掉 Wi-Fi 和蓝牙，等几秒再重新打开并重连，可能需要多试几次；
+> 3. 最后的手段：关闭 uxplay-windows，打开"任务管理器"→"服务"选项卡，重启 `Bonjour Service`，
+>    然后重新打开 uxplay-windows 再试。
 
-*How do I build this software myself?*
- 
-Please see [BUILDING.md](./docs/BUILDING.md)
-<br>
-</details>
+更多内容（排障、Wiki）请见上游的 [Wiki](https://github.com/leapbtw/uxplay-windows/wiki)。
 
-<details>
-<summary><strong>Advanced configuration</strong></summary>
+## 高级配置
 
-<br>
-
-UxPlay arguments are read from `arguments.txt`.
-
-Configuration precedence:
+UxPlay 的启动参数从 `arguments.txt` 读取，优先级如下：
 
 1. `%ProgramData%\uxplay-windows\arguments.txt`
 2. `%APPDATA%\leapbtw\uxplay-windows\arguments.txt`
-3. built-in default: `-n uxplay-windows -nh`
+3. 内置默认值：`-n uxplay-windows -nh`
 
-The machine-wide file takes precedence when it exists, allowing administrators
-to enforce a shared configuration. When it is absent, each user can maintain
-their own configuration under `%APPDATA%`.
+机器级文件存在时优先生效，方便管理员统一下发配置；不存在时，每个用户可以在 `%APPDATA%` 下维护自己的配置。
 
-Environment variables are expanded when the app starts. For example:
+程序启动时会展开环境变量，例如：
 
 ```text
 -n %COMPUTERNAME% -nh
 ```
 
-</details>
+完整的参数说明可以在程序主界面点"**查看 UxPlay 参数说明**"查看（汉化版已翻译）。
 
-<details>
-<summary><strong>Local development (x64 and ARM64)</strong></summary>
+## 从源码构建
 
-<br>
+x64 与 ARM64 的构建由**一个** GitHub Actions 工作流全自动完成：
 
-After installing MSYS2, the complete local build is one PowerShell command:
+1. Fork 本仓库（或直接使用本仓库）；
+2. 打开 **Actions** 标签页；
+3. 选择 **build uxplay-windows** 并运行；
+4. 下载 `uxplay-windows-x64` 或 `uxplay-windows-arm64`。
 
-```powershell
-.\build.ps1 package -Architecture x64
-.\build.ps1 package -Architecture arm64
+本地构建见 [BUILDING.md](./docs/BUILDING.md) 与 [DEVELOPERS-GUIDE.md](./docs/DEVELOPERS-GUIDE.md)。
+
+## 与上游同步
+
+```bash
+git remote add upstream https://github.com/leapbtw/uxplay-windows.git   # 只需一次
+git fetch upstream
+git checkout main
+git merge upstream/multi-arch     # 汉化改动集中在 src/*.cpp、product.wxs、stuff/、README 等少数文件
 ```
 
-Each command produces a verified portable ZIP and MSI under the corresponding
-`out\<architecture>\artifacts` directory. See the [developer
-guide](./docs/DEVELOPERS-GUIDE.md) for prerequisites and additional commands.
+## 已知问题
 
-</details>
+- 有时刚把 iPhone 连上 uxplay-windows，画面会立刻卡住，断开后重连一次即可恢复；
+  这大概率是上游 UxPlay 的问题，新版本中可能已修复。
+- ~~电脑从睡眠唤醒后 uxplay 会异常~~：改用 mDNSResponder 之后该问题似乎已消失。
 
-<details>
-<summary><strong>TODO</strong></summary>
+## 反馈问题
 
-<br>
+构建系统（GitHub Actions）相关的问题请在本仓库提；软件本身的问题请提到上游
+[leapbtw/uxplay-windows](https://github.com/leapbtw/uxplay-windows) 或 [FDH2/UxPlay](https://github.com/FDH2/UxPlay/issues)。
 
-- make an update checker
-- include uxplay.exe for debugging purposes
-- ~~pass arguments from uxplay-windows.exe to uxplay~~ or maybe not
+## 许可证
 
-</details>
-
-<details>
-<summary><strong>Known Issues</strong></summary>
-
-<br>
-
-~~uxplay bugs out when waking PC from Sleep~~
-~~you can fix this by killing uxplay-windows.exe and restarting Bonjour Service, and restarting uxplay.exe. Also restarting your PC might fix this.~~  \
-Apparently moving from Bonjour PS to mDNSResponder fixed it? :)
-
-- Sometimes just after connecting the iPhone to uxplay-windows, the stream appears but frozen. Reconnecting a second time fixes this. Probably an upstream issue maybe already fixed in the newer UxPlay version. I need to investigate further
-
-</details>
-
-## Reporting Issues
-Please report issues related to the build system created with GitHub Actions in this repository. For issues related to other parts of this software, report them in their respective repositories.
-
-## License
-Please take a look at the [LICENSE](./docs/LICENSE.rtf).
+请查看 [LICENSE](./docs/LICENSE.rtf)。

@@ -1,10 +1,10 @@
-## Building from source
+## 从源码构建
 
-The x64 and ARM64 builds are fully automated by one GitHub Actions workflow:
+x64 与 ARM64 的构建由**一个** GitHub Actions 工作流全自动完成：
 
-1. [Fork the repository](https://github.com/leapbtw/uxplay-windows/fork).
-2. Open the **Actions** tab.
-3. Select **build uxplay-windows** and run it.
-4. Download `uxplay-windows-x64` or `uxplay-windows-arm64`.
+1. [Fork 本仓库](https://github.com/FoolishWiser/uxplay-windows-zh/fork)。
+2. 打开 **Actions** 标签页。
+3. 选择 **build uxplay-windows** 并运行。
+4. 下载 `uxplay-windows-x64` 或 `uxplay-windows-arm64`。
 
-For local development, see [DEVELOPERS-GUIDE.md](./DEVELOPERS-GUIDE.md).
+本地构建请见 [DEVELOPERS-GUIDE.md](./DEVELOPERS-GUIDE.md)。

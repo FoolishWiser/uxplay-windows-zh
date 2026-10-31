@@ -46,7 +46,7 @@ bool SessionLog::start(const QString &directory) {
             .filePath("uxplay-windows/logs");
     }
     if (!QDir().mkpath(root)) {
-        m_error = "Unable to create the log folder: " + QDir::toNativeSeparators(root);
+        m_error = "无法创建日志文件夹：" + QDir::toNativeSeparators(root);
         return false;
     }
     const QString name = "uxplay-" + QDateTime::currentDateTimeUtc().toString("yyyyMMdd-HHmmss-zzz")
@@ -59,19 +59,19 @@ bool SessionLog::start(const QString &directory) {
     HANDLE handle = CreateFileW(reinterpret_cast<LPCWSTR>(m_path.utf16()),
         FILE_APPEND_DATA, FILE_SHARE_READ, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (handle == INVALID_HANDLE_VALUE) {
-        m_error = QString("Unable to open the session log (Windows error %1): %2")
+        m_error = QString("无法打开会话日志（Windows 错误码 %1）：%2")
             .arg(GetLastError()).arg(QDir::toNativeSeparators(path()));
         return false;
     }
     const int descriptor = _open_osfhandle(reinterpret_cast<intptr_t>(handle), _O_WRONLY | _O_BINARY);
     if (descriptor < 0) {
         CloseHandle(handle);
-        m_error = "Unable to create the session log descriptor.";
+        m_error = "无法创建会话日志描述符。";
         return false;
     }
     if (!m_file.open(descriptor, QIODevice::WriteOnly, QFileDevice::AutoCloseHandle)) {
         _close(descriptor);
-        m_error = "Unable to use the session log: " + m_file.errorString();
+        m_error = "无法使用会话日志：" + m_file.errorString();
         return false;
     }
 
@@ -87,7 +87,7 @@ bool SessionLog::start(const QString &directory) {
     if (_fileno(stdout) < 0 || _fileno(stderr) < 0
         || _dup2(m_file.handle(), _fileno(stdout)) != 0
         || _dup2(m_file.handle(), _fileno(stderr)) != 0) {
-        m_error = "Unable to redirect the application output to the session log.";
+        m_error = "无法把程序输出重定向到会话日志。";
         restoreStreams();
         m_file.close();
         return false;
@@ -126,7 +126,7 @@ bool SessionLog::start(const QString &directory) {
             }
         });
     }
-    qInfo("Session started. Log file: %s", QDir::toNativeSeparators(path()).toUtf8().constData());
+    qInfo("会话开始，日志文件：%s", QDir::toNativeSeparators(path()).toUtf8().constData());
 
     // Only prune our session logs, never unrelated files. Active logs in another
     // Windows session remain protected by their open file handles.
@@ -150,7 +150,7 @@ void SessionLog::restoreStreams() {
 
 SessionLog::~SessionLog() {
     if (!m_redirected) return;
-    qInfo("Session ended.");
+    qInfo("会话结束。");
     qInstallMessageHandler(m_previousHandler);
     fflush(stdout);
     fflush(stderr);

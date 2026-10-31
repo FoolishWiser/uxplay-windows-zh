@@ -155,7 +155,7 @@ QStringList MainWindow::getArgumentsFromFile() {
 }
 
 void MainWindow::setupUI() {
-    setWindowTitle("uxplay-windows");
+    setWindowTitle("uxplay-windows — AirPlay 镜像服务器");
     setWindowIcon(QApplication::windowIcon());
     setFixedSize(320, 310);
 
@@ -163,25 +163,25 @@ void MainWindow::setupUI() {
     setCentralWidget(central);
     auto *layout = new QVBoxLayout(central);
 
-    m_statusLabel = new QLabel("Initializing...", this);
+    m_statusLabel = new QLabel("正在初始化…", this);
     m_statusLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(m_statusLabel);
 
     // Bluetooth Discovery Checkbox
-    m_bleCheckbox = new QCheckBox("Enable Bluetooth Discovery", this);
+    m_bleCheckbox = new QCheckBox("启用蓝牙发现", this);
     QSettings settings;
     m_bleCheckbox->setChecked(settings.value("ble_enabled", true).toBool());
     connect(m_bleCheckbox, &QCheckBox::toggled, this, &MainWindow::toggleBle);
     layout->addWidget(m_bleCheckbox);
 
-    m_autostartCheckbox = new QCheckBox("Open uxplay-windows at login", this);
+    m_autostartCheckbox = new QCheckBox("开机自动启动 uxplay-windows", this);
     m_autostartCheckbox->setChecked(isAutostartEnabled());
     connect(m_autostartCheckbox, &QCheckBox::toggled,
             this, &MainWindow::toggleAutostart);
     layout->addWidget(m_autostartCheckbox);
 
     // Force Fullscreen Checkbox
-    m_fullscreenCheckbox = new QCheckBox("Force Fullscreen (must select renderer)", this);
+    m_fullscreenCheckbox = new QCheckBox("强制全屏（需先在下方选择渲染器）", this);
     m_fullscreenCheckbox->setChecked(
         settings.value("force_fs_enabled", false).toBool()
     );
@@ -191,10 +191,10 @@ void MainWindow::setupUI() {
 
     // Renderer dropdown
     m_rendererCombo = new QComboBox(this);
-    m_rendererCombo->addItem("Video Renderer (Auto)", "auto");
+    m_rendererCombo->addItem("视频渲染器（自动）", "auto");
     m_rendererCombo->addItem("D3D11", "d3d11");
     m_rendererCombo->addItem("D3D12", "d3d12");
-    m_rendererCombo->addItem("Audio Only", "audio-only");
+    m_rendererCombo->addItem("仅音频（不显示画面）", "audio-only");
 
     {
         QString saved = settings.value("renderer_mode", "auto").toString();
@@ -209,19 +209,19 @@ void MainWindow::setupUI() {
     layout->addWidget(m_rendererCombo);
 
 
-    m_settingsBtn = new QPushButton("Edit UxPlay Arguments (Advanced)", this);
+    m_settingsBtn = new QPushButton("编辑 UxPlay 启动参数（高级）", this);
     connect(m_settingsBtn, &QPushButton::clicked, this, &MainWindow::openSettingsFile);
     layout->addWidget(m_settingsBtn);
 
-    m_listargsBtn = new QPushButton("List UxPlay arguments", this);
+    m_listargsBtn = new QPushButton("查看 UxPlay 参数说明", this);
     connect(m_listargsBtn, &QPushButton::clicked, this, &MainWindow::openListArgsFile);
     layout->addWidget(m_listargsBtn);
 
-    auto *logButton = new QPushButton("Open current log", this);
+    auto *logButton = new QPushButton("打开当前日志", this);
     connect(logButton, &QPushButton::clicked, this, &MainWindow::openCurrentLog);
     layout->addWidget(logButton);
 
-    m_licenseBtn = new QPushButton("License Information", this);
+    m_licenseBtn = new QPushButton("许可证信息", this);
     connect(m_licenseBtn, &QPushButton::clicked, this, &MainWindow::showLicense);
     layout->addWidget(m_licenseBtn);
 
@@ -233,7 +233,7 @@ void MainWindow::openSettingsFile() {
     QString filePath = activeArgumentsPath();
     QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
     
-    m_tray->showMessage("Settings", "Restart the app to apply new arguments.", 
+    m_tray->showMessage("设置", "重启程序后新的启动参数才会生效。", 
                         QSystemTrayIcon::Information, 3000);
 }
 
@@ -246,7 +246,7 @@ void MainWindow::openListArgsFile() {
 void MainWindow::openCurrentLog() {
     const QString path = qApp->property("sessionLogPath").toString();
     if (path.isEmpty()) {
-        QMessageBox::warning(this, "Logging unavailable", "No session log is available.");
+        QMessageBox::warning(this, "日志不可用", "当前没有可用的会话日志。");
         return;
     }
     if (!m_logViewer) {
@@ -270,9 +270,9 @@ void MainWindow::setupTray() {
     m_tray->setToolTip("uxplay-windows");
 
     m_trayMenu = new QMenu(this);
-    m_trayMenu->addAction("Open current log", this, &MainWindow::openCurrentLog);
-    m_trayMenu->addAction("Quit", this, &MainWindow::quit);
-    m_trayMenu->addAction("Restart", this, &MainWindow::restartApplication);
+    m_trayMenu->addAction("打开当前日志", this, &MainWindow::openCurrentLog);
+    m_trayMenu->addAction("退出", this, &MainWindow::quit);
+    m_trayMenu->addAction("重启", this, &MainWindow::restartApplication);
 
     m_tray->setContextMenu(m_trayMenu);
     
@@ -295,7 +295,7 @@ void MainWindow::toggleBle(bool checked) {
 
     settings.setValue("ble_enabled", checked);
     
-    m_tray->showMessage("uxplay-windows", "Please restart the uxplay-windows to apply changes.\n(Right-click the Tray Icon)", 
+    m_tray->showMessage("uxplay-windows", "重启 uxplay-windows 后更改才会生效。\n（右键单击托盘图标即可）", 
                         QSystemTrayIcon::Information, 3000);
 }
 
@@ -306,7 +306,7 @@ void MainWindow::toggleForceFullscreen(bool checked) {
     }
 
     settings.setValue("force_fs_enabled", checked);
-    m_tray->showMessage("uxplay-windows", "Please restart the uxplay-windows to apply changes.\n(Right-click the Tray Icon)", 
+    m_tray->showMessage("uxplay-windows", "重启 uxplay-windows 后更改才会生效。\n（右键单击托盘图标即可）", 
                         QSystemTrayIcon::Information, 3000);
 }
 
@@ -320,7 +320,7 @@ void MainWindow::onRendererChanged(int /*index*/) {
     if (saved == mode) return;
 
     settings.setValue("renderer_mode", mode);
-    m_tray->showMessage("uxplay-windows", "Please restart the uxplay-windows to apply changes.\n(Right-click the Tray Icon)", 
+    m_tray->showMessage("uxplay-windows", "重启 uxplay-windows 后更改才会生效。\n（右键单击托盘图标即可）", 
                         QSystemTrayIcon::Information, 3000);
 }
 
@@ -446,7 +446,7 @@ void MainWindow::onAirplayStarted() {
 
         RenameData info;
         info.pid = GetCurrentProcessId();
-        info.newTitle = "AirPlay Video Stream (ALT+ENTER for Fullscreen)"; 
+        info.newTitle = "AirPlay 视频流（Alt + Enter 切换全屏）"; 
 
         EnumWindows(EnumWindowsProcRename, reinterpret_cast<LPARAM>(&info));
     });
@@ -575,7 +575,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::updateStatus() {
-    QString status = m_running ? "UxPlay server running" : "UxPlay server stopped";
+    QString status = m_running ? "UxPlay 服务运行中" : "UxPlay 服务已停止";
     m_statusLabel->setText(status);
     m_autostartCheckbox->setChecked(isAutostartEnabled());
 }
@@ -605,10 +605,10 @@ bool MainWindow::ensureBonjourServiceInstalled() {
 
     int choice = QMessageBox::question(
         this,
-        "Bonjour Service Not Installed",
-        "Bonjour Service is not installed. Installing it is recommended for "
-        "reliable AirPlay device discovery (mDNS).\n\n"
-        "Do you want to install it now?",
+        "未安装 Bonjour 服务",
+        "Bonjour 服务尚未安装。为保证 AirPlay 设备发现（mDNS）稳定，"
+        "建议先安装。\n\n"
+        "是否现在安装？",
         QMessageBox::Yes | QMessageBox::No,
         QMessageBox::Yes
     );
@@ -616,21 +616,20 @@ bool MainWindow::ensureBonjourServiceInstalled() {
     if (choice != QMessageBox::Yes) {
         QMessageBox::warning(
             this,
-            "Continuing Without Bonjour",
-            "You can continue without Bonjour, but the following conditions "
-            "must be met:\n\n"
-            "1. Both devices must be connected to the same local network.\n"
-            "2. Bluetooth must be enabled on both devices.\n"
-            "3. Bluetooth Discovery must remain enabled in uxplay-windows.\n\n"
-            "Without Bonjour, your devices may still be unable to find each other."
+            "不使用 Bonjour 继续",
+            "你可以在没有 Bonjour 的情况下继续使用，但必须满足以下条件：\n\n"
+            "1. 两台设备必须连接在同一个局域网内。\n"
+            "2. 两台设备的蓝牙都必须开启。\n"
+            "3. uxplay-windows 中的「启用蓝牙发现」必须保持勾选。\n\n"
+            "没有 Bonjour 时，设备之间仍可能无法互相发现。"
         );
         return true;
     }
 
     QMessageBox::information(
         this,
-        "Installing Bonjour Service",
-        "Starting installation of 'Bonjour Service'. Follow any UAC prompt."
+        "正在安装 Bonjour 服务",
+        "即将开始安装「Bonjour 服务」，如出现 UAC 提示请允许。"
     );
 
     int rc = mdns::MdnsResponder::install();
@@ -639,8 +638,8 @@ bool MainWindow::ensureBonjourServiceInstalled() {
     if (rc == 0 && isWindowsServicePresent(serviceName)) {
         QMessageBox::information(
             this,
-            "Installation Complete",
-            "Bonjour Service installed successfully.\nThe application will restart."
+            "安装完成",
+            "Bonjour 服务安装成功。\n程序将重新启动。"
         );
         restartApplication();
         return false; // do not start server in this instance
@@ -648,9 +647,9 @@ bool MainWindow::ensureBonjourServiceInstalled() {
 
     QMessageBox::critical(
         this,
-        "Installation Failed",
-        "Failed to install 'Bonjour Service'.\n\n"
-        "The application will now exit."
+        "安装失败",
+        "安装「Bonjour 服务」失败。\n\n"
+        "程序即将退出。"
     );
     return false;
 }

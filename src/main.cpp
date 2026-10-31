@@ -5,6 +5,8 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QFont>
+#include <QFontDatabase>
 #include <QIcon>
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -179,11 +181,26 @@ int main(int argc, char *argv[]) {
     app.setApplicationName("uxplay-windows");
     app.setProperty("sessionLogPath", loggingReady ? sessionLog.path() : QString());
     if (!loggingReady) {
-        QMessageBox::warning(nullptr, "Logging unavailable", sessionLog.errorString());
+        QMessageBox::warning(nullptr, "日志不可用", sessionLog.errorString());
     }
     qputenv("GST_DEBUG_NO_COLOR", "1");
     app.setWindowIcon(QIcon(QApplication::applicationDirPath() + "/resources/icon.ico"));
-    
+
+#ifdef _WIN32
+    // Windows 的默认界面字体（Segoe UI）不含中文字形，这里显式选用系统自带的
+    // 中文字体，避免汉化界面出现方块，也避免依赖字体回退带来的不一致。
+    for (const QString &family : {QStringLiteral("Microsoft YaHei UI"),
+                                  QStringLiteral("Microsoft YaHei"),
+                                  QStringLiteral("SimHei")}) {
+        if (QFontDatabase::families().contains(family)) {
+            QFont uiFont = QApplication::font();
+            uiFont.setFamily(family);
+            QApplication::setFont(uiFont);
+            break;
+        }
+    }
+#endif
+
     QString appPath = QApplication::applicationDirPath();
     
     QString pluginPath = QDir::toNativeSeparators(appPath + "/lib/gstreamer-1.0");
@@ -245,8 +262,7 @@ int main(int argc, char *argv[]) {
         QMessageBox::critical(
             nullptr,
             "uxplay-windows",
-            QStringLiteral("Unable to create the single-instance lock "
-                           "(Windows error %1).")
+            QStringLiteral("无法创建单实例锁（Windows 错误码 %1）。")
                 .arg(mutexError)
         );
         return 1;
@@ -261,7 +277,7 @@ int main(int argc, char *argv[]) {
             QMessageBox::critical(
                 nullptr,
                 "uxplay-windows",
-                "uxplay-windows is already running but did not respond."
+                "uxplay-windows 已在运行，但没有响应。"
             );
             return 1;
         }
@@ -275,7 +291,7 @@ int main(int argc, char *argv[]) {
         QMessageBox::critical(
             nullptr,
             "uxplay-windows",
-            "Unable to create the single-instance communication pipe.\n\n" +
+            "无法创建单实例通信管道。\n\n" +
                 singleInstanceServer.errorString()
         );
         CloseHandle(singleInstanceMutex);
@@ -312,7 +328,7 @@ int main(int argc, char *argv[]) {
     app.setQuitOnLastWindowClosed(false);
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-        QMessageBox::critical(nullptr, "Error", "System tray not available.");
+        QMessageBox::critical(nullptr, "错误", "系统托盘不可用。");
 #ifdef _WIN32
         singleInstanceServer.close();
         CloseHandle(singleInstanceMutex);
@@ -353,7 +369,7 @@ int main(int argc, char *argv[]) {
             QMessageBox::critical(
                 nullptr,
                 "uxplay-windows",
-                "Unable to restart uxplay-windows."
+                "无法重新启动 uxplay-windows。"
             );
             return 1;
         }

@@ -15,7 +15,7 @@
 
 LogViewer::LogViewer(const QString &path, QWidget *parent)
     : QDialog(parent), m_file(path) {
-    setWindowTitle("Current log — uxplay-windows");
+    setWindowTitle("当前日志 — uxplay-windows");
     resize(900, 550);
     auto *layout = new QVBoxLayout(this);
     auto *location = new QLabel(QDir::toNativeSeparators(path), this);
@@ -30,22 +30,22 @@ LogViewer::LogViewer(const QString &path, QWidget *parent)
     m_text->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     m_text->setMaximumBlockCount(10000);
     layout->addWidget(m_text);
-    m_status = new QLabel("Live • Recent 10,000 lines • Copy all includes the entire session", this);
+    m_status = new QLabel("实时更新 · 最近 10000 行 · 「复制全部」会复制整个会话内容", this);
     m_status->setWordWrap(true);
     layout->addWidget(m_status);
     auto *buttons = new QHBoxLayout;
     buttons->addStretch();
-    auto *copy = new QPushButton("Copy all", this);
+    auto *copy = new QPushButton("复制全部", this);
     copy->setObjectName("copyLog");
     connect(copy, &QPushButton::clicked, this, &LogViewer::copyAll);
     buttons->addWidget(copy);
-    auto *close = new QPushButton("Close", this);
+    auto *close = new QPushButton("关闭", this);
     connect(close, &QPushButton::clicked, this, &QDialog::close);
     buttons->addWidget(close);
     layout->addLayout(buttons);
 
     if (!m_file.open(QIODevice::ReadOnly)) {
-        m_status->setText("Unable to read the log: " + m_file.errorString());
+        m_status->setText("无法读取日志：" + m_file.errorString());
         copy->setEnabled(false);
         return;
     }
@@ -66,7 +66,7 @@ void LogViewer::refresh() {
     const QByteArray bytes = m_file.read(256 * 1024);
     if (bytes.isEmpty()) {
         if (m_file.error() != QFileDevice::NoError)
-            m_status->setText("Unable to read the log: " + m_file.errorString());
+            m_status->setText("无法读取日志：" + m_file.errorString());
         return;
     }
     const QString text = m_decoder(bytes);
@@ -83,15 +83,15 @@ void LogViewer::refresh() {
 void LogViewer::copyAll() {
     QFile file(m_file.fileName());
     if (!file.open(QIODevice::ReadOnly)) {
-        m_status->setText("Unable to copy the log: " + file.errorString());
+        m_status->setText("无法复制日志：" + file.errorString());
         return;
     }
     // Snapshot the size so continued output does not extend this read forever.
     const QByteArray bytes = file.read(file.size());
     if (file.error() != QFileDevice::NoError) {
-        m_status->setText("Unable to copy the log: " + file.errorString());
+        m_status->setText("无法复制日志：" + file.errorString());
         return;
     }
     QApplication::clipboard()->setText(QString::fromUtf8(bytes));
-    m_status->setText("Copied the entire session. Live updates continue.");
+    m_status->setText("已复制整个会话内容，实时更新继续。");
 }
