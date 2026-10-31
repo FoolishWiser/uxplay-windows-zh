@@ -10,6 +10,7 @@
     Version="2.1.0.1736"
     UpgradeCode="00000eaf-dcca-458f-ab77-aaef11ce4ba8"
     Language="2052"
+    Codepage="65001"
     Scope="perMachine">
 
     <MajorUpgrade
